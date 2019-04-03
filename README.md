@@ -6,6 +6,11 @@ berimbau-tool is a software for creating recordings for the berimbau-esp32 based
 
 * g++ (GCC) 8.2.1
 * std=c++17
+* stdc++fs
+* Python2.7
+* esptool.py v2.6-beta1
+* mkspiffs SPIFFS_OBJ_META_LEN=4
+* GTKmm 3
 
 ## License
 

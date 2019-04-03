@@ -24,9 +24,32 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Cli.h>
+#include <gtkmm/application.h>
+#include <glibmm/fileutils.h>
+#include <glibmm/markup.h>
+#include <gtkmm/builder.h>
+
+#include <Gui.h>
+#include <iostream>
 
 int main(int argc, char *argv[])
-{    
-    return Cli::run(argc, argv);
+{
+    auto app = Gtk::Application::create(argc, argv, "com.github.aedalzotto.berimbau-tool-gui");
+
+    try {
+        return app->run(*Gui::run());
+    } catch(const Glib::FileError& ex){
+        std::cerr << "FileError: " << ex.what() << std::endl;
+        return 1;
+    } catch(const Glib::MarkupError& ex){
+        std::cerr << "MarkupError: " << ex.what() << std::endl;
+        return 1;
+    } catch(const Gtk::BuilderError& ex){
+        std::cerr << "BuilderError: " << ex.what() << std::endl;
+        return 1;
+    } catch(const std::runtime_error& ex){
+        std::cerr << "BuilderError: " << ex.what() << std::endl;
+        return 1;
+    }
+
 }

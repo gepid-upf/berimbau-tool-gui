@@ -1,52 +1,71 @@
-EXEC := berimbau-tool
+BIN := berimbau-tool-gui
 
-CC := g++
-CP := cp
-MK := mkdir
-RM := rm
+CXX := g++
+CP  := cp
+MK  := mkdir
+RM  := rm
 
-SRCDIR := src
+SRCDIR   := src
+DATADIR	 := data
 BUILDDIR := build
-EXECDIR := bin
+TMPDIR 	 := tmp
+INCDIR 	 := $(SRCDIR)/include
+BINDIR 	 := $(BUILDDIR)/bin
+SHAREDIR := $(BUILDDIR)/share/$(BIN)
+LIBDIR 	 := $(BUILDDIR)/lib/$(BIN)
+
+SRCEXT   := cpp
+
+SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
+GLADEFILES := $(wildcard $(DATADIR)/*.glade)
 
 TARGET := $(EXECDIR)/$(EXEC)
 
-SRCEXT := cpp
+SRCEXT 	:= cpp
 SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
-OBJECTS := $(addprefix $(BUILDDIR)/,$(notdir $(SOURCES:.$(SRCEXT)=.o)))
-CFLAGS := -g -Wall -std=c++17
-LDFLAGS := -lstdc++fs -lpython2.7
-INCLUDES := -I./$(SRCDIR)/include -std=c++17 -I/usr/include/python2.7
+OBJECTS := $(addprefix $(TMPDIR)/,$(notdir $(SOURCES:.$(SRCEXT)=.o)))
 
-all: $(TARGET) cpmkspiffs
+TARGET 	 := $(BINDIR)/$(BIN)
+CXXFLAGS := -g -Wall -std=c++17 -Wno-register `pkg-config --cflags gtkmm-3.0`
+LDFLAGS  := -lstdc++fs -lpython2.7 `pkg-config --libs gtkmm-3.0` -pthread
+INCLUDES := -I./$(INCDIR) -I/usr/include/python2.7
 
-cpmkspiffs: libmkspiffs
-	@echo "Copying spiffs to binary folder"
-	@$(MK) -p $(EXECDIR)
-	@$(CP) mkspiffs/mkspiffs $(EXECDIR)/mkspiffs
+CPGLADE 	:= $(addprefix $(SHAREDIR)/,$(notdir $(GLADEFILES)))
+LIBMKSPIFFS := $(LIBDIR)/mkspiffs
 
-libmkspiffs:
+all: $(TARGET) $(CPGLADE) $(LIBMKSPIFFS)
+
+$(LIBMKSPIFFS):
+	@echo "Compiling mkspiffs..."
 	@make dist -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
+	@echo "Copying spiffs to binary folder"
+	@$(MK) -p $(LIBDIR)
+	@$(CP) mkspiffs/mkspiffs $(LIBDIR)/mkspiffs
 
 buildrun: all
 	./$(TARGET)
 
-run: cpmkspiffs
+run:
 	./$(TARGET)
 
 $(TARGET): $(OBJECTS)
 	@echo "Linking..."
-	@$(MK) -p $(EXECDIR)
-	$(CC) $^ -o $(TARGET) $(LDFLAGS)
+	@$(MK) -p $(BINDIR)
+	$(CXX) $^ -o $(TARGET) $(LDFLAGS)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+$(TMPDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@echo "Compiling $<"
-	@$(MK) -p $(BUILDDIR)
-	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDES)
+	@$(MK) -p $(TMPDIR)
+	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDES)
+
+$(CPGLADE): $(GLADEFILES)
+	@echo "Copying glade files..."
+	@$(MK) -p $(SHAREDIR)
+	@$(CP) $< $@
 
 clean:
 	@echo "Cleaning..."
-	@$(RM) -rf $(BUILDDIR) $(EXECDIR) $(SHAREDIR)
+	@$(RM) -rf $(BUILDDIR) $(BINDIR) $(SHAREDIR) $(TMPDIR)
 	@make -C mkspiffs clean
 
 .PHONY: clean
