@@ -17,7 +17,6 @@ LIBDIR 	 := $(BUILDDIR)/lib/$(BIN)
 SRCEXT   := cpp
 
 SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
-GLADEFILES := $(wildcard $(DATADIR)/*.glade)
 
 TARGET := $(EXECDIR)/$(EXEC)
 
@@ -30,7 +29,6 @@ CXXFLAGS := -g -Wall -std=c++17 -Wno-register `pkg-config --cflags gtkmm-3.0`
 LDFLAGS  := -lstdc++fs -lpython2.7 `pkg-config --libs gtkmm-3.0` -pthread
 INCLUDES := -I./$(INCDIR) -I/usr/include/python2.7
 
-CPGLADE 	:= $(addprefix $(SHAREDIR)/,$(notdir $(GLADEFILES)))
 LIBMKSPIFFS := $(LIBDIR)/mkspiffs
 
 all: $(TARGET) $(CPGLADE) $(LIBMKSPIFFS)
@@ -58,7 +56,7 @@ $(TMPDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@$(MK) -p $(TMPDIR)
 	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDES)
 
-$(CPGLADE): $(GLADEFILES)
+$(SHAREDIR)/%: $(DATADIR)/%
 	@echo "Copying glade files..."
 	@$(MK) -p $(SHAREDIR)
 	@$(CP) $< $@
