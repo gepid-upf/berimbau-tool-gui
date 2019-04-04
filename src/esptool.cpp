@@ -33,6 +33,7 @@
 #include <sstream>
 
 std::string ESPTool::err_msg;
+std::string ESPTool::localpath;
 
 std::string ESPTool::get_esptool()
 {
@@ -47,13 +48,15 @@ std::string ESPTool::get_esptool()
 
 int ESPTool::read_flash(uint32_t address, uint32_t size, std::string filename)
 {
-    std::string esptool = get_esptool();
-    if(esptool.empty()){
-        err_msg = "esptool.py not found";
-        return 1;   // Not found.
+    if(localpath.empty()){
+        localpath = get_esptool();
+        if(localpath.empty()){
+            err_msg = "esptool.py not found";
+            return 1;   // Not found.
+        }
     }
 
-    long unsigned int lens[] = {esptool.size(), std::string("read_flash").size(),
+    long unsigned int lens[] = {localpath.size(), std::string("read_flash").size(),
                     std::to_string(address).size(), std::to_string(size).size(),
                     filename.size() };
 
@@ -61,7 +64,7 @@ int ESPTool::read_flash(uint32_t address, uint32_t size, std::string filename)
     for(int i = 0; i < 5; i++)
         argv[i] = new char[lens[i]];
     
-    strcpy(argv[0], esptool.c_str());
+    strcpy(argv[0], localpath.c_str());
     strcpy(argv[1], "read_flash");
     strcpy(argv[2], std::to_string(address).c_str());
     strcpy(argv[3], std::to_string(size).c_str());
@@ -74,20 +77,22 @@ int ESPTool::read_flash(uint32_t address, uint32_t size, std::string filename)
 
 int ESPTool::write_flash(uint32_t address, std::string filename)
 {
-    std::string esptool = get_esptool();
-    if(esptool.empty()){
-        err_msg = "esptool.py not found";
-        return 1;   // Not found.
+    if(localpath.empty()){
+        localpath = get_esptool();
+        if(localpath.empty()){
+            err_msg = "esptool.py not found";
+            return 1;   // Not found.
+        }
     }
 
-    long unsigned int lens[] = {esptool.size(), std::string("write_flash").size(),
+    long unsigned int lens[] = {localpath.size(), std::string("write_flash").size(),
                                 std::to_string(address).size(), filename.size() };
 
     char *argv[4];
     for(int i = 0; i < 4; i++)
         argv[i] = new char[lens[i]];
     
-    strcpy(argv[0], esptool.c_str());
+    strcpy(argv[0], localpath.c_str());
     strcpy(argv[1], "write_flash");
     strcpy(argv[2], std::to_string(address).c_str());
     strcpy(argv[3], filename.c_str());
@@ -95,4 +100,9 @@ int ESPTool::write_flash(uint32_t address, std::string filename)
     int ret = Util::Python::call_funct("esptool", "main", 4, argv);
     err_msg = Util::Python::get_last_err();
     return ret;
+}
+
+void ESPTool::set_path(std::string &path)
+{
+    localpath = path+"esptool.py";
 }

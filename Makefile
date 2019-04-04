@@ -17,6 +17,7 @@ LIBDIR 	 := $(BUILDDIR)/lib/$(BIN)
 SRCEXT   := cpp
 
 SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
+SHAREFILES := $(wildcard $(DATADIR)/*)
 
 TARGET := $(EXECDIR)/$(EXEC)
 
@@ -30,8 +31,9 @@ LDFLAGS  := -lstdc++fs -lpython2.7 `pkg-config --libs gtkmm-3.0` -pthread
 INCLUDES := -I./$(INCDIR) -I/usr/include/python2.7
 
 LIBMKSPIFFS := $(LIBDIR)/mkspiffs
+LIBESPTOOL  := $(LIBDIR)/esptool.py
 
-all: $(TARGET) $(CPGLADE) $(LIBMKSPIFFS)
+all: $(TARGET) $(CPGLADE) $(LIBMKSPIFFS) $(LIBESPTOOL)
 
 $(LIBMKSPIFFS):
 	@echo "Compiling mkspiffs..."
@@ -39,6 +41,11 @@ $(LIBMKSPIFFS):
 	@echo "Copying spiffs to binary folder"
 	@$(MK) -p $(LIBDIR)
 	@$(CP) mkspiffs/mkspiffs $(LIBDIR)/mkspiffs
+
+$(LIBESPTOOL):
+	@echo "Copying esptool..."
+	@$(MK) -p $(LIBDIR)
+	@$(CP) esptool/esptool.py $(LIBDIR)/esptool.py
 
 buildrun: all
 	./$(TARGET)
@@ -52,12 +59,12 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $^ -o $(TARGET) $(LDFLAGS)
 
 $(TMPDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@echo "Compiling $<"
+	@echo "Compiling $<..."
 	@$(MK) -p $(TMPDIR)
 	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDES)
 
 $(SHAREDIR)/%: $(DATADIR)/%
-	@echo "Copying glade files..."
+	@echo "Copying $<..."
 	@$(MK) -p $(SHAREDIR)
 	@$(CP) $< $@
 

@@ -31,15 +31,19 @@
 
 #include <Gui.h>
 #include <BerimbauTool.h>
+#include <Util.h>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     auto app = Gtk::Application::create(argc, argv, "com.github.aedalzotto.berimbau-tool-gui");
+    std::string progbin = Util::System::get_program_path(); 
+    std::string progpath = progbin.substr(0, progbin.find("bin/berimbau-tool-gui"));
     
+    BerimbauTool::set_path(progpath+"lib/berimbau-tool-gui/");
 
     try {
-        int ret = app->run(*Gui::run());
+        int ret = app->run(*Gui::run(progpath));
         BerimbauTool::clean();
         return ret;
     } catch(const Glib::FileError& ex){

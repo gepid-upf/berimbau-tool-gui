@@ -70,7 +70,15 @@ public:
      */
     static std::string get_err_msg() { return err_msg; }
 
+    /**
+     * @brief Sets path for esptool.py
+     * 
+     * @details If path is not set, searches for env ESP_IDF
+     */
+    static void set_path(std::string &path);
+
 private:
+    static std::string localpath;
     static std::string err_msg;
     static std::string get_esptool();    
 };

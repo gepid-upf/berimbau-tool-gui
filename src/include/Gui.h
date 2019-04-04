@@ -43,7 +43,7 @@
 
 class Gui {
 public:
-    static Gtk::Window* run();
+    static Gtk::Window* run(std::string &path);
 
     static void notify_end_dump();
     static void notify_end_flash();

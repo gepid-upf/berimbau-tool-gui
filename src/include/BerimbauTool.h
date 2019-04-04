@@ -152,9 +152,18 @@ public:
      */
     static int clean();
 
+    /**
+     * @brief Sets program path for mkspiffs and esptool location
+     * 
+     * @param path The path to esptool.py and mkspiffs.
+     */
+    static void set_path(std::string path);
+
 private:
     static const uint32_t START_ADDR = 0x210000;
     static const uint32_t PART_SIZE  = 0x1f0000;
+
+    static std::string mkspath;
 
     static unsigned int line_no;
     static std::string line_value;

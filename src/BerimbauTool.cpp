@@ -32,6 +32,8 @@
 #include <filesystem>
 #include <cstring>
 
+std::string BerimbauTool::mkspath;
+
 unsigned int BerimbauTool::line_no = 0;
 std::string BerimbauTool::line_value;
 
@@ -115,8 +117,10 @@ int BerimbauTool::dump()
 
     char buffer[10];
     strcpy(buffer, std::to_string(PART_SIZE).c_str());
+    char pathbuf[256];
+    strcpy(pathbuf, mkspath.c_str());
 
-    char *argv[] = {"./bin/mkspiffs",
+    char *argv[] = { pathbuf,
                     "-u", "/tmp/berimbau/img",
                     "-b", "4096",
                     "-p", "256",
@@ -150,8 +154,10 @@ int BerimbauTool::flash()
 {
     char buffer[10];
     strcpy(buffer, std::to_string(PART_SIZE).c_str());
+    char pathbuf[256];
+    strcpy(pathbuf, mkspath.c_str());
 
-    char *argv[] = {"./bin/mkspiffs",
+    char *argv[] = { pathbuf,
                     "-c", "/tmp/berimbau/img",
                     "-b", "4096",
                     "-p", "256",
@@ -207,4 +213,10 @@ unsigned int BerimbauTool::get_log_cnt()
         cnt++;
 
     return cnt;
+}
+
+void BerimbauTool::set_path(std::string path)
+{
+    mkspath = path+"mkspiffs";
+    ESPTool::set_path(path);
 }

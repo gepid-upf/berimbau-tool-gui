@@ -57,16 +57,13 @@ Glib::Dispatcher Gui::disp_end_flash;
 bool Gui::loaded = false;
 unsigned int Gui::logcnt = 0;
 
-Gtk::Window* Gui::run()
+Gtk::Window* Gui::run(std::string &path)
 {
-
-    std::string path = Util::System::get_program_path();
-    path = path.substr(0,path.find("bin/berimbau-tool-gui")) + "share/berimbau-tool-gui/";
-
     Glib::RefPtr<Gtk::Builder> builder;
+
     //Open glade file
     try {
-        builder = Gtk::Builder::create_from_file( path+"gui.glade");
+        builder = Gtk::Builder::create_from_file(path+"share/berimbau-tool-gui/gui.glade");
     } catch(...){
         throw;
     }
