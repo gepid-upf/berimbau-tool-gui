@@ -66,6 +66,7 @@ public:
      *          1000,presa
      * 
      * @param fname The input csv file name.
+     * @param fout  The name of the output file.
      * 
      * @return  0 if success.
      *          1 if input file not existent.
@@ -73,7 +74,7 @@ public:
      *          3 if time column is not a integer. Sets line_no to invalid row and line_value to invalid value.
      *          4 if instrument not recognized. Sets line_no to invalid row and line_value to invalid text.
      */
-    static int create(std::string &fname);
+    static int create(std::string &fname, std::string fout);
 
     /**
      * @brief Gets the row number of the csv input error.
@@ -134,6 +135,13 @@ public:
      *         3 fail to copy.
      */
     static int log(std::string path);
+
+    /**
+     * @brief Gets the count of logs in the dump.
+     * 
+     * @return The number of logs.
+     */
+    static unsigned int get_log_cnt();
 
     /**
      * @brief Clean temporary image files.

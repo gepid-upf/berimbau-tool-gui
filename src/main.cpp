@@ -30,14 +30,18 @@
 #include <gtkmm/builder.h>
 
 #include <Gui.h>
+#include <BerimbauTool.h>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     auto app = Gtk::Application::create(argc, argv, "com.github.aedalzotto.berimbau-tool-gui");
+    
 
     try {
-        return app->run(*Gui::run());
+        int ret = app->run(*Gui::run());
+        BerimbauTool::clean();
+        return ret;
     } catch(const Glib::FileError& ex){
         std::cerr << "FileError: " << ex.what() << std::endl;
         return 1;

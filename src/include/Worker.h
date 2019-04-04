@@ -1,5 +1,5 @@
 /**
- * @file Worker.cpp
+ * @file Worker.h
  * 
  * @author
  * Angelo Elias Dalzotto (150633@upf.br)
@@ -21,21 +21,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Worker.h>
-#include <BerimbauTool.h>
-#include <Gui.h>
+#ifndef _WORKER_H_
+#define _WORKER_H_
 
-int Worker::status = 0;
+#include <gtkmm/textview.h>
 
-// https://mail.gnome.org/archives/gtk-list/2006-February/msg00040.html
-void Worker::run_dump()
-{
-	status = BerimbauTool::dump();
-	Gui::notify_end_dump();
-}
+class Worker {
+public:
+	static void run_dump();
+	static void run_flash();
+	static int get_status() { return status; }
 
-void Worker::run_flash()
-{
-	status = BerimbauTool::flash();
-	Gui::notify_end_flash();
-}
+private:
+	static int status;
+};
+
+#endif /* _WORKER_H_ */

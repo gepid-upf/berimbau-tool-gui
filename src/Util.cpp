@@ -120,3 +120,15 @@ int Util::Python::call_funct(std::string module, std::string funct, int argc, ch
 
     return 0;
 }
+
+// https://stackoverflow.com/questions/143174/how-do-i-get-the-directory-that-a-program-is-running-from/198099#198099?newreg=30e6b2ca6b7743779a3218025156cbe7
+std::string Util::System::get_program_path()
+{
+    char pBuf[256] = {};
+    char szTmp[32] = {};
+    size_t len = sizeof(pBuf);
+    sprintf(szTmp, "/proc/%d/exe", getpid());
+    readlink(szTmp, pBuf, len);
+    
+    return std::string(pBuf);
+}

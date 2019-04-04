@@ -70,6 +70,13 @@ public:
      *         Return code of the program executed.
      */
     static int call_and_wait(char *argv[]);
+
+    /**
+     * @brief Gets the program binary file full path.
+     * 
+     * @return The string with the program path.
+     */
+    static std::string get_program_path();
 };
 
 class Util::Python {
