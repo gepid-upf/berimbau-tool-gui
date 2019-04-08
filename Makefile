@@ -1,13 +1,14 @@
 BIN := berimbau-tool-gui
 
-CXX := g++
+CXX = g++
 CP  := cp
 MK  := mkdir
 RM  := rm
+PKGCFG := pkg-config
 
 SRCDIR   := src
 DATADIR	 := data
-BUILDDIR := build
+BUILDDIR = build
 TMPDIR 	 := tmp
 INCDIR 	 := $(SRCDIR)/include
 BINDIR 	 := $(BUILDDIR)/bin
@@ -26,9 +27,9 @@ SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
 OBJECTS := $(addprefix $(TMPDIR)/,$(notdir $(SOURCES:.$(SRCEXT)=.o)))
 
 TARGET 	 := $(BINDIR)/$(BIN)
-CXXFLAGS := -g -Wall -std=c++17 -Wno-register `pkg-config --cflags gtkmm-3.0`
-LDFLAGS  := -lstdc++fs -lpython2.7 `pkg-config --libs gtkmm-3.0` -pthread
-INCLUDES := -I./$(INCDIR) -I/usr/include/python2.7
+CXXFLAGS := -g -Wall -std=c++17 -Wno-register `$(PKGCFG) --cflags gtkmm-3.0 python-2.7`
+LDFLAGS  := -lstdc++fs `$(PKGCFG) --libs gtkmm-3.0 python-2.7` -pthread
+INCLUDES := -I./$(INCDIR)
 
 LIBMKSPIFFS := $(LIBDIR)/mkspiffs
 LIBESPTOOL  := $(LIBDIR)/esptool.py
