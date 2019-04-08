@@ -162,6 +162,8 @@ public:
 private:
     static const uint32_t START_ADDR = 0x210000;
     static const uint32_t PART_SIZE  = 0x1f0000;
+    
+    static const std::string tmpfolder;
 
     static std::string mkspath;
 

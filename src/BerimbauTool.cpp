@@ -32,6 +32,12 @@
 #include <filesystem>
 #include <cstring>
 
+#ifdef _WIN32
+    const std::string BerimbauTool::tmpfolder = "%TEMP%/berimbau/";
+#else
+    const std::string BerimbauTool::tmpfolder = "/tmp/berimbau/";
+#endif
+
 std::string BerimbauTool::mkspath;
 
 unsigned int BerimbauTool::line_no = 0;
@@ -109,10 +115,10 @@ int BerimbauTool::create(std::string &fname, std::string fout)
 int BerimbauTool::dump()
 {
     int ret = 0;
-    if(!std::filesystem::exists("/tmp/berimbau"))
-        std::filesystem::create_directory("/tmp/berimbau");
+    if(!std::filesystem::exists(tmpfolder))
+        std::filesystem::create_directory(tmpfolder);
 
-    if((ret = ESPTool::read_flash(START_ADDR, PART_SIZE, "/tmp/berimbau/partition.bin")))
+    if((ret = ESPTool::read_flash(START_ADDR, PART_SIZE, tmpfolder+"partition.bin")))
         return ret;
 
     char buffer[10];
@@ -120,14 +126,19 @@ int BerimbauTool::dump()
     char pathbuf[256];
     strcpy(pathbuf, mkspath.c_str());
 
+    char inbuf[256];
+    char outbuf[256];
+    strcpy(outbuf, std::string(tmpfolder+"img").c_str());
+    strcpy(inbuf, std::string(tmpfolder+"partition.bin").c_str());
+
     char *argv[] = { pathbuf,
-                    "-u", "/tmp/berimbau/img",
+                    "-u", outbuf,
                     "-b", "4096",
                     "-p", "256",
                     "-s", buffer,
-                    "/tmp/berimbau/partition.bin", nullptr };
+                    inbuf, nullptr };
 
-    return Util::System::call_and_wait(argv);
+    return Util::System::call_and_wait(10, argv);
 }
 
 int BerimbauTool::merge(std::string filename)
@@ -135,14 +146,14 @@ int BerimbauTool::merge(std::string filename)
     if(!std::filesystem::exists(filename))
         return 1;
 
-    if(!std::filesystem::exists("/tmp/berimbau/img"))
+    if(!std::filesystem::exists(tmpfolder+"img"))
         return 2;
 
-    if(!std::filesystem::exists("/tmp/berimbau/img/recs"))
-        std::filesystem::create_directory("/tmp/berimbau/img/recs");
+    if(!std::filesystem::exists(tmpfolder+"img/recs"))
+        std::filesystem::create_directory(tmpfolder+"img/recs");
     
     try {
-        std::filesystem::copy(filename, "/tmp/berimbau/img/recs", std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy(filename, tmpfolder+"img/recs", std::filesystem::copy_options::overwrite_existing);
     } catch(std::exception &ex){
         return 3;
     }
@@ -156,34 +167,38 @@ int BerimbauTool::flash()
     strcpy(buffer, std::to_string(PART_SIZE).c_str());
     char pathbuf[256];
     strcpy(pathbuf, mkspath.c_str());
+    char outbuf[256];
+    char inbuf[256];
+    strcpy(outbuf, std::string(tmpfolder+"img").c_str());
+    strcpy(inbuf, std::string(tmpfolder+"partition.bin").c_str());
 
     char *argv[] = { pathbuf,
-                    "-c", "/tmp/berimbau/img",
+                    "-c", outbuf,
                     "-b", "4096",
                     "-p", "256",
                     "-s", buffer,
-                    "/tmp/berimbau/partition.bin", nullptr };
+                    inbuf, nullptr };
 
     int ret = 0;
-    if((ret = Util::System::call_and_wait(argv)))
+    if((ret = Util::System::call_and_wait(10, argv)))
         return ret;
 
-    return ESPTool::write_flash(START_ADDR, "/tmp/berimbau/partition.bin");
+    return ESPTool::write_flash(START_ADDR, tmpfolder+"partition.bin");
 }
 
 int BerimbauTool::log(std::string path)
 {
-    if(!std::filesystem::exists("/tmp/berimbau/img"))
+    if(!std::filesystem::exists(tmpfolder+"img"))
         return 1;
 
-    if(!std::filesystem::exists("/tmp/berimbau/img/logs"))
+    if(!std::filesystem::exists(tmpfolder+"img/logs"))
         return 2;
 
     if(!std::filesystem::exists(path))
         std::filesystem::create_directory(path);
     
     try {
-        std::filesystem::copy("/tmp/berimbau/img/logs", path, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
+        std::filesystem::copy(tmpfolder+"img/logs", path, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
     } catch(std::exception &ex){
         return 3;
     }
@@ -193,11 +208,11 @@ int BerimbauTool::log(std::string path)
 
 int BerimbauTool::clean()
 {
-    if(!std::filesystem::exists("/tmp/berimbau/"))
+    if(!std::filesystem::exists(tmpfolder))
         return 1;
 
     try {
-        std::filesystem::remove_all("/tmp/berimbau/");
+        std::filesystem::remove_all(tmpfolder);
     } catch(...){
         return 2;
     }
@@ -205,11 +220,11 @@ int BerimbauTool::clean()
 
 unsigned int BerimbauTool::get_log_cnt()
 {
-    if(!std::filesystem::exists("/tmp/berimbau/img/logs"))
+    if(!std::filesystem::exists(tmpfolder+"img/logs"))
         return 0;
 
     unsigned int cnt = 0;
-    for(auto& p: std::filesystem::directory_iterator("/tmp/berimbau/img/logs"))
+    for(auto& p: std::filesystem::directory_iterator(tmpfolder+"img/logs"))
         cnt++;
 
     return cnt;

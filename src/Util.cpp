@@ -24,9 +24,21 @@
 
 #include <Util.h>
 #include <unistd.h>
+#include <Python.h>
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+#elif defined(__linux__)
+
 #include <sys/wait.h>
 
-#include <Python.h>
+#else
+
+#error "Platform not available"
+
+#endif
 
 // http://www.cplusplus.com/articles/2wA0RXSz/
 const std::vector<std::string> Util::String::explode(const std::string& str, const char& separator)
@@ -56,8 +68,40 @@ bool Util::String::is_integer(const std::string &str)
     return (*p == 0);
 }
 
-int Util::System::call_and_wait(char *argv[])
+int Util::System::call_and_wait(int argc, char *argv[])
 {
+#ifdef _WIN32
+    std::string argv_concat;
+    for(int i = 0; i < argc; i++){
+        argv_concat += argv[i];
+        if(i != argc-1) argv_concat += " ";
+    }
+    char argvbuf[512] = {};
+    strcpy(argvbuf, argv_concat.c_str());
+
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory( &si, sizeof(si) );
+    si.cb = sizeof(si);
+    ZeroMemory( &pi, sizeof(pi) );
+
+    if(!CreateProcess(argv[0], argvbuf, nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi))
+        return -1;
+
+    // Wait until child process exits.
+    WaitForSingleObject( pi.hProcess, INFINITE );
+
+    DWORD ret;
+    GetExitCodeProcess(pi.hProcess, &ret);
+
+    // Close process and thread handles. 
+    CloseHandle( pi.hProcess );
+    CloseHandle( pi.hThread );
+
+    return (int)ret;
+
+#elif defined(__linux__)
     int pid = fork();
     if(!pid){
         exit(execvp(argv[0], argv));
@@ -70,6 +114,9 @@ int Util::System::call_and_wait(char *argv[])
        
         return WEXITSTATUS(status);
     }
+#else 
+    #error Invalid Platform
+#endif
 }
 
 std::string Util::Python::err_msg;
@@ -125,10 +172,17 @@ int Util::Python::call_funct(std::string module, std::string funct, int argc, ch
 std::string Util::System::get_program_path()
 {
     char pBuf[256] = {};
-    char szTmp[32] = {};
     size_t len = sizeof(pBuf);
+
+#ifdef _WIN32
+    GetModuleFileName(NULL, pBuf, len);
+#elif defined(__linux__)
+    char szTmp[32] = {};
     sprintf(szTmp, "/proc/%d/exe", getpid());
     readlink(szTmp, pBuf, len);
-    
+#else
+    #error Invalid Platform
+#endif
+
     return std::string(pBuf);
 }

@@ -28,7 +28,7 @@
 #include <esptool.h>
 #include <Util.h>
 
-#include <python2.7/Python.h>
+#include <Python.h>
 #include <cstdlib>
 #include <sstream>
 

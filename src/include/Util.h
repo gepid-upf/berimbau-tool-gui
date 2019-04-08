@@ -69,7 +69,7 @@ public:
      * @return -1 if program not found.
      *         Return code of the program executed.
      */
-    static int call_and_wait(char *argv[]);
+    static int call_and_wait(int argc, char *argv[]);
 
     /**
      * @brief Gets the program binary file full path.
