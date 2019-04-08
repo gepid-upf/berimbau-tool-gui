@@ -37,9 +37,9 @@
 int main(int argc, char *argv[])
 {
     auto app = Gtk::Application::create(argc, argv, "com.github.aedalzotto.berimbau-tool-gui");
-    std::string progbin = Util::System::get_program_path(); 
-    std::string progpath = progbin.substr(0, progbin.find("bin/berimbau-tool-gui"));
-    
+    std::string progpath = Util::System::get_program_path();
+    progpath.erase(progpath.find("bin/berimbau-tool-gui"), std::string::npos);
+
     BerimbauTool::set_path(progpath+"lib/berimbau-tool-gui/");
 
     try {

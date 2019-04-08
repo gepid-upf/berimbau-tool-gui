@@ -18,7 +18,10 @@ LIBDIR 	 := $(BUILDDIR)/lib/$(BIN)
 SRCEXT   := cpp
 
 SOURCES := $(wildcard $(SRCDIR)/*.$(SRCEXT))
-SHAREFILES := $(wildcard $(DATADIR)/*)
+DATAFILES := $(wildcard $(DATADIR)/*.png) $(wildcard $(DATADIR)/*.glade)
+SHAREFILES := $(addprefix $(SHAREDIR)/,$(notdir $(DATAFILES)))
+
+$(info $(SHAREFILES))
 
 TARGET := $(EXECDIR)/$(EXEC)
 
@@ -31,17 +34,31 @@ CXXFLAGS := -g -Wall -std=c++17 -Wno-register `$(PKGCFG) --cflags gtkmm-3.0 pyth
 LDFLAGS  := -lstdc++fs `$(PKGCFG) --libs gtkmm-3.0 python-2.7` -pthread
 INCLUDES := -I./$(INCDIR)
 
+ifeq ($(CXX),g++)
 LIBMKSPIFFS := $(LIBDIR)/mkspiffs
+else
+LIBMKSPIFFS := $(LIBDIR)/mkspiffs.exe
+endif
+
 LIBESPTOOL  := $(LIBDIR)/esptool.py
 
-all: $(TARGET) $(CPGLADE) $(LIBMKSPIFFS) $(LIBESPTOOL)
+all: $(TARGET) $(LIBMKSPIFFS) $(LIBESPTOOL) $(SHAREFILES)
 
 $(LIBMKSPIFFS):
 	@echo "Compiling mkspiffs..."
+ifeq ($(CXX),g++)
 	@make dist -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
+else
+	make TARGET_OS=win32 CXX=x86_64-w64-mingw32-g++ CXXFLAGS=-fstack-protector LDFLAGS=-fstack-protector -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
+endif
 	@echo "Copying spiffs to binary folder"
 	@$(MK) -p $(LIBDIR)
+ifeq ($(CXX),g++)
 	@$(CP) mkspiffs/mkspiffs $(LIBDIR)/mkspiffs
+else
+	@$(CP) mkspiffs/mkspiffs.exe $(LIBDIR)/mkspiffs.exe
+endif
+
 
 $(LIBESPTOOL):
 	@echo "Copying esptool..."
