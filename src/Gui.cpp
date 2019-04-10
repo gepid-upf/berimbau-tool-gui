@@ -260,10 +260,10 @@ void Gui::create_from(std::string fname)
     diag_out.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
     diag_out.add_button("Selecionar", Gtk::RESPONSE_OK);
 
-    Gtk::MessageDialog *dialog;
     switch(diag_out.run()){
     case Gtk::RESPONSE_OK:
         diag_out.hide();
+        Gtk::MessageDialog *dialog;
         switch(BerimbauTool::create(fname, diag_out.get_filename())){
         case 0:
             dialog = new Gtk::MessageDialog(*window_main, "Sucesso", false, Gtk::MESSAGE_INFO);
@@ -286,11 +286,11 @@ void Gui::create_from(std::string fname)
             dialog->run();
             break;
         }
+        delete dialog;
+        break;
     case Gtk::RESPONSE_CANCEL:
         break;
     }
-
-    delete dialog;
 }
 
 void Gui::on_button_logs_clicked()
@@ -301,9 +301,9 @@ void Gui::on_button_logs_clicked()
     diag_out.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
     diag_out.add_button("Selecionar", Gtk::RESPONSE_OK);
 
-    Gtk::MessageDialog *dialog;
     switch(diag_out.run()){
     case Gtk::RESPONSE_OK:
+        Gtk::MessageDialog *dialog;
         diag_out.hide();
         switch(BerimbauTool::log(diag_out.get_filename())){
         case 0:
@@ -317,12 +317,12 @@ void Gui::on_button_logs_clicked()
             dialog->run();
             break;
         }
+        delete dialog;
         break;
     case Gtk::RESPONSE_CANCEL:
         break;
     }
 
-    delete dialog;
 }
 
 void Gui::on_button_export_clicked()
@@ -342,9 +342,9 @@ void Gui::on_button_export_clicked()
     diag_in.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
     diag_in.add_button("Abrir", Gtk::RESPONSE_OK);
 
-    Gtk::MessageDialog *dialog;
     switch(diag_in.run()){
     case Gtk::RESPONSE_OK:
+        Gtk::MessageDialog *dialog;
         diag_in.hide();
         switch(BerimbauTool::merge(diag_in.get_filename())){
         case 0:
@@ -360,12 +360,13 @@ void Gui::on_button_export_clicked()
             dialog->run();
             break;
         }
+        delete dialog;
         break;
     case Gtk::RESPONSE_CANCEL:
         break;
     }
 
-    delete dialog;
+    
 }
 
 void Gui::add_rec(std::string name)
