@@ -56,19 +56,19 @@ int ESPTool::read_flash(uint32_t address, uint32_t size, std::string filename)
         }
     }
 
-    long unsigned int lens[] = {localpath.size(), std::string("read_flash").size(),
+    long unsigned int lens[] = {fs::path(localpath).string().size(), std::string("read_flash").size(),
                     std::to_string(address).size(), std::to_string(size).size(),
-                    filename.size() };
+                    fs::path(filename).string().size() };
 
     char *argv[5];
     for(int i = 0; i < 5; i++)
         argv[i] = new char[lens[i]];
     
-    strcpy(argv[0], localpath.c_str());
+    strcpy(argv[0], fs::path(localpath).string().c_str());
     strcpy(argv[1], "read_flash");
     strcpy(argv[2], std::to_string(address).c_str());
     strcpy(argv[3], std::to_string(size).c_str());
-    strcpy(argv[4], filename.c_str());
+    strcpy(argv[4], fs::path(filename).string().c_str());
 
     int ret = Util::Python::call_funct("esptool", "main", 5, argv);
     err_msg = Util::Python::get_last_err();
@@ -85,17 +85,17 @@ int ESPTool::write_flash(uint32_t address, std::string filename)
         }
     }
 
-    long unsigned int lens[] = {localpath.size(), std::string("write_flash").size(),
-                                std::to_string(address).size(), filename.size() };
+    long unsigned int lens[] = {fs::path(localpath).string().size(), std::string("write_flash").size(),
+                                std::to_string(address).size(), fs::path(filename).string().size() };
 
     char *argv[4];
     for(int i = 0; i < 4; i++)
         argv[i] = new char[lens[i]];
     
-    strcpy(argv[0], localpath.c_str());
+    strcpy(argv[0], fs::path(localpath).string().c_str());
     strcpy(argv[1], "write_flash");
     strcpy(argv[2], std::to_string(address).c_str());
-    strcpy(argv[3], filename.c_str());
+    strcpy(argv[3], fs::path(filename).string().c_str());
 
     int ret = Util::Python::call_funct("esptool", "main", 4, argv);
     err_msg = Util::Python::get_last_err();
@@ -104,5 +104,5 @@ int ESPTool::write_flash(uint32_t address, std::string filename)
 
 void ESPTool::set_path(std::string &path)
 {
-    localpath = path+"esptool.py";
+    localpath = path+"/esptool.py";
 }

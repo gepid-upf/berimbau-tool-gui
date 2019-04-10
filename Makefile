@@ -8,7 +8,7 @@ PKGCFG := pkg-config
 
 SRCDIR   := src
 DATADIR	 := data
-BUILDDIR = build
+BUILDDIR := build
 TMPDIR 	 := tmp
 INCDIR 	 := $(SRCDIR)/include
 BINDIR 	 := $(BUILDDIR)/bin
@@ -49,7 +49,7 @@ $(LIBMKSPIFFS):
 ifeq ($(CXX),g++)
 	@make dist -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
 else
-	make TARGET_OS=win32 CXX=x86_64-w64-mingw32-g++ CXXFLAGS=-fstack-protector LDFLAGS=-fstack-protector -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
+	make TARGET_OS=win32 CXX=$(CXX) CXXFLAGS=-fno-stack-protector LDFLAGS=-fno-stack-protector -C mkspiffs BUILD_CONFIG_NAME="-esp-idf" CPPFLAGS="-DSPIFFS_OBJ_META_LEN=4"
 endif
 	@echo "Copying spiffs to binary folder"
 	@$(MK) -p $(LIBDIR)

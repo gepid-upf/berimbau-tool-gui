@@ -28,6 +28,16 @@
 #include <vector>
 #include <string>
 
+#ifdef _WIN32
+    #include <experimental/filesystem>
+    namespace fs = std::experimental::filesystem;
+    #define SP "\\"
+#else
+    #include <filesystem>
+    namespace fs = std::filesystem;
+    #define SP "/"
+#endif
+
 namespace Util {
     class String;
     class System;
@@ -77,6 +87,27 @@ public:
      * @return The string with the program path.
      */
     static std::string get_program_path();
+
+    /**
+     * @brief Copy a file. If it already exists, overwrites.
+     * 
+     * @details This is a workaround to messy std::filesystem bugs in MingW
+     * 
+     * @param src The source file
+     * @param dst The destination file
+     */
+    static void copy_file_overwrite_workaround(const fs::path &src, const fs::path &dst);
+
+    /**
+     * @brief Copy contents of a folder to another. If file already exists, overwrites.
+     * 
+     * @details This is a workaround to messy std::filesystem bugs in MingW
+     * 
+     * @param src The source folder
+     * @param dst The destination folder
+     */
+    static void merge_folders_overwrite_workaround(const fs::path &src, const fs::path &dst);
+
 };
 
 class Util::Python {

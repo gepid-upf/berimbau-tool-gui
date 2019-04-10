@@ -127,6 +127,11 @@ int Util::Python::call_funct(std::string module, std::string funct, int argc, ch
 
     PySys_SetArgv(argc, argv); // Sets esptool.py path and args
 
+    PyObject* sysPath = PySys_GetObject((char*)"path");
+    PyObject* programName = PyString_FromString(std::string(argv[0]).substr(0, std::string(argv[0]).find_last_of(SP)).c_str());
+    PyList_Append(sysPath, programName);
+    Py_DECREF(programName);
+
     // Import whole esptool.py
     PyObject *src = PyString_FromString(module.c_str());
     PyObject *mod = PyImport_Import(src);
@@ -185,4 +190,37 @@ std::string Util::System::get_program_path()
 #endif
 
     return std::string(pBuf);
+}
+
+void Util::System::copy_file_overwrite_workaround(const fs::path &src, const fs::path &dst)
+{
+	try {
+	#ifdef _WIN32
+		if(!fs::exists(dst))
+			fs::copy_file(src, dst);
+		else {
+			fs::remove(dst);
+			fs::copy_file(src, dst);
+		}
+	#else
+		fs::copy_file(src, dst, fs::copy_options::overwrite_existing);
+	#endif
+	} catch(...) {
+		throw;
+	}
+}
+
+void Util::System::merge_folders_overwrite_workaround(const fs::path &src, const fs::path &dst)
+{
+	try {
+	#ifdef _WIN32
+		for(auto &p : fs::directory_iterator(src)){
+			copy_file_overwrite_workaround(p.path(), dst/p.path().filename());
+		}
+	#else
+		fs::copy(src, dst, fs::copy_options::overwrite_existing);
+	#endif
+	} catch(...){
+		throw;
+	}
 }

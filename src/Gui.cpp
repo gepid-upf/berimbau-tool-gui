@@ -57,13 +57,19 @@ Glib::Dispatcher Gui::disp_end_flash;
 bool Gui::loaded = false;
 unsigned int Gui::logcnt = 0;
 
+#ifdef _WIN32
+    namespace fs = std::experimental::filesystem;
+#else
+    namespace fs = std::filesystem;
+#endif
+
 Gtk::Window* Gui::run(std::string &path)
 {
     Glib::RefPtr<Gtk::Builder> builder;
 
     //Open glade file
     try {
-        builder = Gtk::Builder::create_from_file(path+"share/berimbau-tool-gui/gui.glade");
+        builder = Gtk::Builder::create_from_file(fs::path(path+"/share/berimbau-tool-gui/gui.glade").string());
     } catch(...){
         throw;
     }
@@ -188,20 +194,8 @@ void Gui::on_notification_end_dump()
         dialog->run();
         break;
     case 2:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Impossível importar esptool");
-        dialog->run();
-        break;
     case 3:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Impossível importar env");
-        dialog->run();
-        break;
     case 4:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Função main não encontrada");
-        dialog->run();
-        break;
     case 5:
         dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
         dialog->set_secondary_text(Util::Python::get_last_err());
@@ -228,7 +222,11 @@ void Gui::on_button_create_clicked()
 
     auto filter = Gtk::FileFilter::create();
     filter->set_name("Arquivos .csv");
+#ifdef _WIN32
+    filter->add_pattern("*.csv");
+#else
     filter->add_mime_type("text/csv");
+#endif
 
     diag_in.add_filter(filter);
     diag_in.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
@@ -252,7 +250,11 @@ void Gui::create_from(std::string fname)
 
     auto filter = Gtk::FileFilter::create();
     filter->set_name("Arquivos .dat");
+#ifdef _WIN32
+    filter->add_pattern("*.dat");
+#else
     filter->add_mime_type("application/octet-stream");
+#endif
 
     diag_out.add_filter(filter);
     diag_out.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
@@ -311,7 +313,7 @@ void Gui::on_button_logs_clicked()
             break;
         case 3:
             dialog = new Gtk::MessageDialog(*window_main, "ERRO", false, Gtk::MESSAGE_ERROR);
-            dialog->set_secondary_text("Impossível copiar");
+            dialog->set_secondary_text(BerimbauTool::get_error_value());
             dialog->run();
             break;
         }
@@ -330,7 +332,11 @@ void Gui::on_button_export_clicked()
 
     auto filter = Gtk::FileFilter::create();
     filter->set_name("Arquivos .dat");
+#ifdef _WIN32
+    filter->add_pattern("*.dat");
+#else
     filter->add_mime_type("application/octet-stream");
+#endif
 
     diag_in.add_filter(filter);
     diag_in.add_button("Cancelar", Gtk::RESPONSE_CANCEL);
@@ -350,7 +356,7 @@ void Gui::on_button_export_clicked()
             break;
         case 3:
             dialog = new Gtk::MessageDialog(*window_main, "ERRO", false, Gtk::MESSAGE_ERROR);
-            dialog->set_secondary_text("Impossível copiar");
+            dialog->set_secondary_text(BerimbauTool::get_error_value());
             dialog->run();
             break;
         }
@@ -364,7 +370,7 @@ void Gui::on_button_export_clicked()
 
 void Gui::add_rec(std::string name)
 {
-    name = name.substr(name.find_last_of("/")+1, name.find(".dat"));
+    name = name.substr(name.find_last_of(SP)+1, name.find(".dat"));
     txtbuf->set_text(txtbuf->get_text() + name + "\n");
 }
 
@@ -397,20 +403,8 @@ void Gui::on_notification_end_flash()
         dialog->run();
         break;
     case 2:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Impossível importar esptool");
-        dialog->run();
-        break;
     case 3:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Impossível importar env");
-        dialog->run();
-        break;
     case 4:
-        dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
-        dialog->set_secondary_text("Função main não encontrada");
-        dialog->run();
-        break;
     case 5:
         dialog = new Gtk::MessageDialog(*window_main, "Erro no esptool", false, Gtk::MESSAGE_ERROR);
         dialog->set_secondary_text(Util::Python::get_last_err());

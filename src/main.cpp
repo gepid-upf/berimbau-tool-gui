@@ -30,6 +30,7 @@
 #include <gtkmm/builder.h>
 
 #include <Gui.h>
+#include <Util.h>
 #include <BerimbauTool.h>
 #include <Util.h>
 #include <iostream>
@@ -38,9 +39,9 @@ int main(int argc, char *argv[])
 {
     auto app = Gtk::Application::create(argc, argv, "com.github.aedalzotto.berimbau-tool-gui");
     std::string progpath = Util::System::get_program_path();
-    progpath.erase(progpath.find("bin/berimbau-tool-gui"), std::string::npos);
-
-    BerimbauTool::set_path(progpath+"lib/berimbau-tool-gui/");
+    progpath.erase(progpath.find("bin" SP "berimbau-tool-gui"), std::string::npos);
+    
+    BerimbauTool::set_path(progpath+"/lib/berimbau-tool-gui");
 
     try {
         int ret = app->run(*Gui::run(progpath));
@@ -58,6 +59,8 @@ int main(int argc, char *argv[])
     } catch(const std::runtime_error& ex){
         std::cerr << "BuilderError: " << ex.what() << std::endl;
         return 1;
+    } catch(const std::exception &ex){
+        std::cerr << ex.what() << std::endl;
     }
 
 }

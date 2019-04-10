@@ -29,13 +29,20 @@
 
 #include <fstream>
 #include <sstream>
-#include <filesystem>
 #include <cstring>
 
 #ifdef _WIN32
-    const std::string BerimbauTool::tmpfolder = "%TEMP%/berimbau/";
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 #else
-    const std::string BerimbauTool::tmpfolder = "/tmp/berimbau/";
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+
+#ifdef _WIN32
+    const std::string BerimbauTool::tmpfolder = "tmp";
+#else
+    const std::string BerimbauTool::tmpfolder = "/tmp/berimbau";
 #endif
 
 std::string BerimbauTool::mkspath;
@@ -115,21 +122,22 @@ int BerimbauTool::create(std::string &fname, std::string fout)
 int BerimbauTool::dump()
 {
     int ret = 0;
-    if(!std::filesystem::exists(tmpfolder))
-        std::filesystem::create_directory(tmpfolder);
 
-    if((ret = ESPTool::read_flash(START_ADDR, PART_SIZE, tmpfolder+"partition.bin")))
+    if(!fs::exists(tmpfolder))
+        fs::create_directory(tmpfolder);
+
+    if((ret = ESPTool::read_flash(START_ADDR, PART_SIZE, tmpfolder+"/partition.bin")))
         return ret;
 
     char buffer[10];
     strcpy(buffer, std::to_string(PART_SIZE).c_str());
     char pathbuf[256];
-    strcpy(pathbuf, mkspath.c_str());
+    strcpy(pathbuf, fs::path(mkspath).string().c_str());
 
     char inbuf[256];
     char outbuf[256];
-    strcpy(outbuf, std::string(tmpfolder+"img").c_str());
-    strcpy(inbuf, std::string(tmpfolder+"partition.bin").c_str());
+    strcpy(outbuf, fs::path(tmpfolder+"/img").string().c_str());
+    strcpy(inbuf, fs::path(tmpfolder+"/partition.bin").string().c_str());
 
     char *argv[] = { pathbuf,
                     "-u", outbuf,
@@ -143,18 +151,19 @@ int BerimbauTool::dump()
 
 int BerimbauTool::merge(std::string filename)
 {
-    if(!std::filesystem::exists(filename))
+    if(!fs::exists(filename))
         return 1;
 
-    if(!std::filesystem::exists(tmpfolder+"img"))
+    if(!fs::exists(tmpfolder+"/img"))
         return 2;
 
-    if(!std::filesystem::exists(tmpfolder+"img/recs"))
-        std::filesystem::create_directory(tmpfolder+"img/recs");
-    
+    if(!fs::exists(tmpfolder+"/img/recs"))
+        fs::create_directory(tmpfolder+"/img/recs");
+
     try {
-        std::filesystem::copy(filename, tmpfolder+"img/recs", std::filesystem::copy_options::overwrite_existing);
+        Util::System::copy_file_overwrite_workaround(filename, tmpfolder+"/img/recs/"+fs::path(filename).filename().string());
     } catch(std::exception &ex){
+        line_value = ex.what();
         return 3;
     }
 
@@ -166,11 +175,11 @@ int BerimbauTool::flash()
     char buffer[10];
     strcpy(buffer, std::to_string(PART_SIZE).c_str());
     char pathbuf[256];
-    strcpy(pathbuf, mkspath.c_str());
+    strcpy(pathbuf, fs::path(mkspath).string().c_str());
     char outbuf[256];
     char inbuf[256];
-    strcpy(outbuf, std::string(tmpfolder+"img").c_str());
-    strcpy(inbuf, std::string(tmpfolder+"partition.bin").c_str());
+    strcpy(outbuf, fs::path(tmpfolder+"/img").string().c_str());
+    strcpy(inbuf, fs::path(tmpfolder+"/partition.bin").string().c_str());
 
     char *argv[] = { pathbuf,
                     "-c", outbuf,
@@ -183,23 +192,24 @@ int BerimbauTool::flash()
     if((ret = Util::System::call_and_wait(10, argv)))
         return ret;
 
-    return ESPTool::write_flash(START_ADDR, tmpfolder+"partition.bin");
+    return ESPTool::write_flash(START_ADDR, tmpfolder+"/partition.bin");
 }
 
 int BerimbauTool::log(std::string path)
 {
-    if(!std::filesystem::exists(tmpfolder+"img"))
+    if(!fs::exists(tmpfolder+"/img"))
         return 1;
 
-    if(!std::filesystem::exists(tmpfolder+"img/logs"))
+    if(!fs::exists(tmpfolder+"/img/logs"))
         return 2;
 
-    if(!std::filesystem::exists(path))
-        std::filesystem::create_directory(path);
-    
+    if(!fs::exists(path))
+        fs::create_directory(path);
+
     try {
-        std::filesystem::copy(tmpfolder+"img/logs", path, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
+        Util::System::merge_folders_overwrite_workaround(tmpfolder+"/img/logs", path);
     } catch(std::exception &ex){
+        line_value = ex.what();
         return 3;
     }
 
@@ -208,11 +218,11 @@ int BerimbauTool::log(std::string path)
 
 int BerimbauTool::clean()
 {
-    if(!std::filesystem::exists(tmpfolder))
+    if(!fs::exists(tmpfolder))
         return 1;
 
     try {
-        std::filesystem::remove_all(tmpfolder);
+        fs::remove_all(tmpfolder);
     } catch(...){
         return 2;
     }
@@ -220,11 +230,11 @@ int BerimbauTool::clean()
 
 unsigned int BerimbauTool::get_log_cnt()
 {
-    if(!std::filesystem::exists(tmpfolder+"img/logs"))
+    if(!fs::exists(tmpfolder+"/img/logs"))
         return 0;
 
     unsigned int cnt = 0;
-    for(auto& p: std::filesystem::directory_iterator(tmpfolder+"img/logs"))
+    for(auto& p: fs::directory_iterator(tmpfolder+"/img/logs"))
         cnt++;
 
     return cnt;
@@ -232,6 +242,10 @@ unsigned int BerimbauTool::get_log_cnt()
 
 void BerimbauTool::set_path(std::string path)
 {
-    mkspath = path+"mkspiffs";
+#ifdef _WIN32
+    mkspath = path+"/mkspiffs.exe";
+#else
+    mkspath = path+"/mkspiffs";
+#endif
     ESPTool::set_path(path);
 }
