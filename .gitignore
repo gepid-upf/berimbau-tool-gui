@@ -10,3 +10,4 @@ win/
 wintmp/
 *.glade~
 *.dat
+*.gddoc
