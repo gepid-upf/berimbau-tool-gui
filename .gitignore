@@ -9,3 +9,4 @@ partition.bin
 win/
 wintmp/
 *.glade~
+*.dat
