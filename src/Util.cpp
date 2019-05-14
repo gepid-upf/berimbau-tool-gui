@@ -215,10 +215,12 @@ void Util::System::merge_folders_overwrite_workaround(const fs::path &src, const
 	try {
 	#ifdef _WIN32
 		for(auto &p : fs::directory_iterator(src)){
+            if(fs::is_directory(p.path()))  // recursive
+                merge_folders_overwrite_workaround(p.path(), dst);
 			copy_file_overwrite_workaround(p.path(), dst/p.path().filename());
 		}
 	#else
-		fs::copy(src, dst, fs::copy_options::overwrite_existing);
+		fs::copy(src, dst, fs::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
 	#endif
 	} catch(...){
 		throw;

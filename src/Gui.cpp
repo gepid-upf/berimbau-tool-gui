@@ -311,7 +311,7 @@ void Gui::on_button_logs_clicked()
             dialog->set_secondary_text("Pasta de logs copiada para o destino");
             dialog->run();
             break;
-        case 3:
+        default:
             dialog = new Gtk::MessageDialog(*window_main, "ERRO", false, Gtk::MESSAGE_ERROR);
             dialog->set_secondary_text(BerimbauTool::get_error_value());
             dialog->run();
