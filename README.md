@@ -1,6 +1,6 @@
-# berimbau-tool
+# berimbau-tool-gui
 
-berimbau-tool is a software for creating recordings for the berimbau-esp32 based on a .csv input file, dumping recordings from the berimbau-esp32 and recovering its logs.
+berimbau-tool-gui is a GUI frontend to the [berimbau-tool](https://github.com/aedalzotto/berimbau-tool): a software for creating recordings for the [berimbau-esp32](https://github.com/aedalzotto/berimbau-esp32) based on a .csv input file, dumping the recordings and recovering its logs.
 
 ## Built with
 
@@ -26,6 +26,14 @@ g++.exe src/*.cpp -lstdc++fs -stc=c++17 `pkg-config --libs --cflags gtkmm-3.0 py
 cd mkspiffs
 make
 ```
+
+## Authors
+
+* **Angelo Elias Dalzotto** - *Berimbau-tool and GUI* - [aedalzotto](https://github.com/aedalzotto)
+
+## Acknowledgements
+
+* **Ivan Grokhotkov** - *[mkspiffs](https://github.com/igrr/mkspiffs)* - [igrr](https://github.com/igrr)
 
 ## License
 
