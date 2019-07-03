@@ -1,6 +1,6 @@
 # berimbau-tool-gui
 
-berimbau-tool-gui is a GUI frontend to the [berimbau-tool](https://github.com/aedalzotto/berimbau-tool): a software for creating recordings for the [berimbau-esp32](https://github.com/aedalzotto/berimbau-esp32) based on a .csv input file, dumping the recordings and recovering its logs.
+berimbau-tool-gui is a GUI frontend to the [berimbau-tool](https://github.com/gepid-upf/berimbau-tool): a software for creating recordings for the [berimbau-esp32](https://github.com/gepid-upf/berimbau-esp32) based on a .csv input file, dumping the recordings and recovering its logs.
 
 ## Built with
 
